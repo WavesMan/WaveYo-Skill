@@ -1,0 +1,27 @@
+# WaveYo Skill — Git 忽略规则
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 临时文件
+*.tmp
+*.bak
+*.log
+
+# 版本归档（保留目录但忽略内容）
+waveyo/versions/*
+!waveyo/versions/.gitkeep
+
+# Node / Python（如后续加入工具脚本）
+node_modules/
+__pycache__/
+*.pyc
+.venv/

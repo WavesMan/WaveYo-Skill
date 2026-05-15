@@ -1,0 +1,3 @@
+# 适配版蒸馏 Prompt 模板
+# 基于 colleague-skill prompts/ 框架，适配为代码证据驱动模式
+# 当前蒸馏由 AI 直接完成，Prompt 模板留作后续手动蒸馏参考
