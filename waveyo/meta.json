@@ -2,8 +2,8 @@
   "name": "WaveYo",
   "slug": "waveyo",
   "source": "github.com/WavesMan",
-  "skill_version": "1.0.0",
-  "distilled_at": "2026-05-15",
+  "skill_version": "1.1.0",
+  "distilled_at": "2026-05-17",
   "evidence_base": {
     "profile_files": "resume/resume-data/ (20 分析文件)",
     "source_repos": {
@@ -15,6 +15,9 @@
       "02-简历表达边界.md",
       "06-职责边界与风险说明.md",
       "06-fork与二次开发边界说明.md"
+    ],
+    "collaboration_sessions": [
+      "2026-05-17 YoMirrorSite 全流程会话 (83 行 reflog + 5 个 PR)"
     ]
   },
   "skill_domains": [
@@ -29,7 +32,8 @@
     "object-storage-integration",
     "gateway-bff-pattern",
     "python-ssh-audit",
-    "project-delivery"
+    "project-delivery",
+    "git-collaboration"
   ],
   "boundary_rules": [
     "no-exaggeration",
@@ -38,13 +42,31 @@
     "benchmark-disclaimer",
     "no-planned-as-done"
   ],
+  "collaboration_protocol": {
+    "file": "collaboration.md",
+    "extracted_from": "2026-05-17 YoMirrorSite 全流程会话",
+    "evidence": "83 行 reflog + 5 个 PR 完整生命周期",
+    "sections": [
+      "协作生命周期",
+      "角色边界",
+      "约束注入机制",
+      "跨会话状态传递",
+      "信任梯度",
+      "调试诊断协作规范",
+      "PR 自动审查报告结构"
+    ]
+  },
   "methodology_ref": "colleague-skill (titanwings/colleague-skill) — 5-layer persona framework adapted for code-evidence-driven distillation",
   "persona_layers": {
     "layer_0": "工程原则（7 条硬规则）",
     "layer_1": "技术定位（1 主线 + 3 辅助线）",
     "layer_2": "工程表达习惯",
     "layer_3": "技术决策模式",
-    "layer_4": "协作行为",
+    "layer_4": "协作行为（含人机协作）",
     "layer_5": "技术红线（8 条硬约束）"
+  },
+  "changelog": {
+    "1.1.0": "新增 collaboration.md（人机协作规范）+ git-collaboration 子 Skill（Git/PR/Review 规范）。persona.md Layer 4 扩展人机协作小节，work.md 扩展 Git 协作流程和 PR 审查报告生成。",
+    "1.0.0": "初始蒸馏：25 个仓库 + 20 个画像文件 → 6 个子 Skill + 5 层 Persona + Work Skill。"
   }
 }

@@ -147,6 +147,35 @@ project/
 - 附配置变更 checklist
 - 附回滚方案
 
+### Git 协作流程
+
+**Commit 规范**：`<type>(<scope>): <中文描述>`
+- Type：`feat` / `fix` / `refactor` / `docs` / `chore` / `test` / `perf`
+- Scope：按项目模块命名（如 `s3`, `config`, `handler`, `service`, `router`）
+- 一个 commit 对应一个逻辑单元，不混合不同性质的变更
+- 多项同类修复用顿号分隔描述
+
+**原子拆分原则**：多类别修复按严重程度拆分 — `fix(security)` → `fix(defects)` → `chore(style)`，多 commit 共享同一 PR，人类 squash merge 为干净历史。
+
+**PR 标准**：
+- 分支命名：`feature/<描述>` / `fix/<描述>`
+- PR 正文必须包含结构化审查报告（Security / Defect / Style 三级分类，每项含文件路径+行号）
+- PR 正文模板和 Review Checklist 见 `skills/git-collaboration.md`
+
+**合并后清理**：
+1. `git checkout main && git pull origin main`
+2. `git branch -D feature/<分支名>`
+3. `git push origin --delete feature/<分支名>`（可选）
+4. `git remote prune origin`
+
+### PR 审查报告生成
+
+每次创建 PR 时自动生成结构化审查报告，三级分类：
+
+- **  Security**：凭证泄露、TLS 配置、权限校验
+- **  Defect**：错误吞掉、panic、goroutine 泄漏、nil 防护
+- **  Style**：死代码、注释不一致、代码重复、分层依赖违规
+
 ---
 
 ## 经验知识库
@@ -162,6 +191,7 @@ project/
 - systemd unit 使用 `Type=simple` + `Restart=always` + `RestartSec=5`
 - 前端组件拆分时问自己：这个组件是否能在另一个项目直接复用？如果不能，拆。
 - README 中的性能数据必须标注环境（CPU/内存/并发数/数据量）
+- 集成测试失败时诊断顺序：客户端配置（UsePathStyle/endpoint/region）→ 基础设施（bucket 存在性/权限）→ 替代方案
 
 ---
 
@@ -174,7 +204,8 @@ project/
 - **部署服务** → Dockerfile + docker-compose + systemd + 健康检查
 - **写 Python 运维工具** → audit/fix 模式 + ThreadPoolExecutor + 多格式报告
 - **做前端页面** → 组件与数据分离，Vue 3 或 Next.js 按场景选择
-- **Code Review** → 关注 N+1、事务、并发、缓存竞争、错误处理
+- **Code Review** → 关注 N+1、事务、并发、缓存竞争、错误处理，输出 Security / Defect / Style 三级分类报告
+- **创建 PR** → 附结构化审查报告（三级分类，含文件路径+行号），分支命名 feature/fix 前缀
 - **写技术文档** → 四段式结构 + 压测对比 + 部署步骤 + README
 
 ---

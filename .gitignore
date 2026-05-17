@@ -19,6 +19,7 @@ desktop.ini
 # 版本归档（保留目录但忽略内容）
 waveyo/versions/*
 !waveyo/versions/.gitkeep
+!waveyo/versions/v*.md
 
 # Node / Python（如后续加入工具脚本）
 node_modules/

@@ -37,6 +37,7 @@ user-invocable: true
 | Gateway / BFF Pattern | 设计网关或 BFF 层 | `skills/gateway-bff-pattern.md` |
 | Python SSH Audit | Linux 批量巡检/修复 | `skills/python-ssh-audit.md` |
 | Project Delivery | 服务打包部署 | `skills/project-delivery.md` |
+| Git Collaboration | 分支/提交/PR/Code Review | `skills/git-collaboration.md` |
 
 ---
 
@@ -45,16 +46,18 @@ user-invocable: true
 ```
 waveyo/
 ├── SKILL.md              # 本文件（主入口）
-├── work.md               # 技术工作技能（~180 行）
-├── persona.md            # 工程人格（~145 行）
+├── work.md               # 技术工作技能
+├── persona.md            # 工程人格（5 层框架）
+├── collaboration.md      # 人机协作规范
 ├── meta.json             # 元数据
-├── skills/               # 6 个领域专项 Skill
+├── skills/               # 7 个领域专项 Skill
 │   ├── go-service-scaffold.md
 │   ├── multi-level-cache.md
 │   ├── object-storage-integration.md
 │   ├── gateway-bff-pattern.md
 │   ├── python-ssh-audit.md
-│   └── project-delivery.md
+│   ├── project-delivery.md
+│   └── git-collaboration.md
 └── versions/             # 版本归档
 ```
 
