@@ -1,7 +1,7 @@
 ---
 name: waveyo
-description: "WaveYo 工程技能蒸馏 — 以 Go 后端为主线，具备 Python 自动化、前端工程和运维交付能力的工具型工程开发者 Skill。含 6 个领域专项子 Skill：Go 服务脚手架、多级缓存、对象存储、网关/BFF、Python SSH 巡检、项目交付。"
-version: "1.0.0"
+description: "WaveYo 工程技能蒸馏 — 以 Go 后端为主线，具备 Python 自动化、前端工程和运维交付能力的工具型工程开发者 Skill。含 7 个领域专项子 Skill：Go 服务脚手架、多级缓存、对象存储、网关/BFF、Python SSH 巡检、项目交付、Git 协作规范。含人机协作协议。"
+version: "1.1.0"
 user-invocable: true
 ---
 
