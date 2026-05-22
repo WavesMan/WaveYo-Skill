@@ -2,7 +2,7 @@
   "name": "WaveYo",
   "slug": "waveyo",
   "source": "github.com/WavesMan",
-  "skill_version": "1.1.0",
+  "skill_version": "1.2.0",
   "distilled_at": "2026-05-17",
   "evidence_base": {
     "profile_files": "resume/resume-data/ (20 分析文件)",
@@ -66,6 +66,7 @@
     "layer_5": "技术红线（8 条硬约束）"
   },
   "changelog": {
+    "1.2.0": "新增 5 级日志体系（TRACE < DEBUG < INFO < WARN < ERROR）+ 统一错误处理规范（AppError/AppException、错误码分类、错误中间件、错误-日志级别映射、缓存 miss/error 区分）。涉及 work.md、go-service-scaffold.md、python-ssh-audit.md、gateway-bff-pattern.md、object-storage-integration.md、multi-level-cache.md、persona.md、collaboration.md。",
     "1.1.0": "新增 collaboration.md（人机协作规范）+ git-collaboration 子 Skill（Git/PR/Review 规范）。persona.md Layer 4 扩展人机协作小节，work.md 扩展 Git 协作流程和 PR 审查报告生成。",
     "1.0.0": "初始蒸馏：25 个仓库 + 20 个画像文件 → 6 个子 Skill + 5 层 Persona + Work Skill。"
   }
