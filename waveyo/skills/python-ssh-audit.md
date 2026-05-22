@@ -257,12 +257,127 @@ heartbeat_thread.join()
 
 ---
 
+## 日志规范（5 级体系）
+
+```python
+import logging
+
+# 自定义 TRACE 级别（Python 标准库最低为 DEBUG=10，TRACE 注册为 5）
+TRACE = 5
+logging.addLevelName(TRACE, "TRACE")
+
+def trace(self, msg, *args, **kwargs):
+    if self.isEnabledFor(TRACE):
+        self._log(TRACE, msg, args, **kwargs)
+
+logging.Logger.trace = trace
+
+def init_logger(level: str = "INFO") -> logging.Logger:
+    """初始化结构化 JSON 日志器"""
+    logger = logging.getLogger("ssh-audit")
+    level_map = {
+        "trace": TRACE,
+        "debug": logging.DEBUG,
+        "info": logging.INFO,
+        "warn": logging.WARNING,
+        "error": logging.ERROR,
+    }
+    logger.setLevel(level_map.get(level.lower(), logging.INFO))
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter(
+        '{"timestamp":"%(asctime)s","level":"%(levelname)s",'
+        '"msg":"%(message)s","host":"%(host)s"}'
+    ))
+    logger.addHandler(handler)
+    return logger
+```
+
+日志级别与 SSH 操作映射：
+
+| 级别 | 用途 |
+|------|------|
+| TRACE | 逐命令输出、原始 stdout/stderr |
+| DEBUG | SSH 连接详情、认证方式、命令构造 |
+| INFO | 步骤完成、主机检查结果、报告生成 |
+| WARN | 非关键失败（单主机超时、单检查项跳过） |
+| ERROR | 连接失败、认证失败、批量任务中断 |
+
+---
+
+## 错误处理
+
+### AppException 基类
+
+```python
+class AppException(Exception):
+    """统一应用异常基类"""
+    def __init__(self, code: str, message: str, cause: Exception = None):
+        self.code = code
+        self.message = message
+        self.cause = cause
+        super().__init__(f"[{code}] {message}")
+
+class SSHConnectionError(AppException):
+    """SSH 连接失败"""
+    def __init__(self, host: str, cause: Exception = None):
+        super().__init__("SSH_CONNECT", f"failed to connect to {host}", cause)
+
+class CommandExecutionError(AppException):
+    """命令执行失败"""
+    def __init__(self, host: str, command: str, cause: Exception = None):
+        super().__init__("SSH_EXEC", f"command failed on {host}: {command}", cause)
+
+class SSHAuthError(AppException):
+    """SSH 认证失败"""
+    def __init__(self, host: str, cause: Exception = None):
+        super().__init__("AUTH", f"authentication failed for {host}", cause)
+
+class SSHTimeoutError(AppException):
+    """SSH 操作超时"""
+    def __init__(self, host: str, cause: Exception = None):
+        super().__init__("TIMEOUT", f"connection timeout for {host}", cause)
+```
+
+### 错误分类（_ssh_exec 中映射）
+
+```python
+import paramiko
+import socket
+
+def _classify_error(host: str, e: Exception) -> AppException:
+    """将 paramiko/socket 异常映射为 AppException"""
+    if isinstance(e, paramiko.AuthenticationException):
+        return SSHAuthError(host, e)
+    if isinstance(e, paramiko.SSHException):
+        return SSHConnectionError(host, e)
+    if isinstance(e, socket.timeout):
+        return SSHTimeoutError(host, e)
+    if isinstance(e, OSError):
+        return SSHConnectionError(host, e)
+    return SSHConnectionError(host, e)
+```
+
+### 错误聚合与摘要
+
+```python
+def error_summary(results: list[HostResult]) -> dict:
+    """按错误码分组统计"""
+    summary = {"SSH_CONNECT": 0, "SSH_EXEC": 0, "AUTH": 0, "TIMEOUT": 0}
+    for r in results:
+        if not r.success and r.error_code:
+            summary[r.error_code] = summary.get(r.error_code, 0) + 1
+    return summary
+```
+
+---
+
 ## 注意事项
 
 - audit 模式不修改目标主机，fix 模式需显式 `--fix` 标志
 - SSH 连接超时默认 30s，大批量场景可调大
 - ThreadPoolExecutor worker 数不超过 20（避免 SSH 连接风暴）
-- 失败主机按错误类型分组，在报告末输出失败分类摘要
+- 失败主机按错误码（SSH_CONNECT / SSH_EXEC / AUTH / TIMEOUT）分组，在报告末输出失败分类摘要
 - 正式场景建议泛化具体 CVE 编号为"Linux 主机批量巡检与修复工具"
 - 修复操作记录完整历史，支持回滚检查
 
