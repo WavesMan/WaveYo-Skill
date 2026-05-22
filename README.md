@@ -2,9 +2,7 @@
 
 > *将一位开发者 25 个公开仓库中反复出现的工程模式、技术习惯和架构判断，蒸馏为一套可被 AI 加载的复用技能。*
 
-[![Skill Type](https://img.shields.io/badge/Skill-Engineering-blue)](./waveyo/SKILL.md)
-[![Version](https://img.shields.io/badge/version-1.2.0-green)](./waveyo/meta.json)
-[![DeepSeek](https://img.shields.io/badge/DeepSeek-TUI%20%7C%20AgentSkills-purple)](https://github.com/deepseek)
+[![Skill Type](https://img.shields.io/badge/Skill-Engineering-blue)](./waveyo/SKILL.md) [![Version](https://img.shields.io/badge/version-1.2.0-green)](./waveyo/meta.json) [![DeepSeek](https://img.shields.io/badge/DeepSeek_TUI-AgentSkills-purple)](https://github.com/deepseek) [![Claude](https://img.shields.io/badge/Claude_Code-AgentSkills-0e6eb8)](https://www.anthropic.com/) [![Cursor](https://img.shields.io/badge/Cursor-AgentSkills-00b4ff)](https://www.cursor.so/) [![Codex](https://img.shields.io/badge/Codex-AgentSkills-8a2be2)](https://openai.com/blog/codex)
 
 ---
 
