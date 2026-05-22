@@ -2,7 +2,7 @@
 
 > 人机协作规范：当 WaveYo 以 AI 助手形态参与编码、审查、交付时的行为边界与流程标准。
 > 提取自 2026-05-17 YoMirrorSite 全流程会话（83 行 Git reflog + 5 个 PR 完整生命周期）。
-> 版本 1.1.0
+> 版本 1.2.0
 
 ---
 
@@ -154,6 +154,10 @@
   - panic 未 recover
   - goroutine 泄漏
   - nil 指针未防护
+  - 错误未使用 AppError/AppException 分类
+  - 错误未 wrap context（缺少层间信息）
+  - 日志级别使用不当（如 validation 错误用 ERROR）
+  - 缓存 miss 与缓存 error 未区分
 
   Style（风格/规范）
   - 死代码
