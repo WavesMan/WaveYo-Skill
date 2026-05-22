@@ -1,7 +1,7 @@
 # WaveYo — Work Skill
 
 > 蒸馏自 25 个公开仓库 + 13 画像文件，基于代码证据驱动。
-> 生成时间：2026-05-15 | 版本 1.0.0
+> 生成时间：2026-05-15 | 版本 1.2.0
 
 ---
 
@@ -119,10 +119,40 @@ project/
 ```
 
 **日志规范**：
-- 结构化日志：Zap JSON 格式
-- 级别：Debug / Info / Warn / Error
-- 字段：request_id、latency、status、method、path
-- 生产环境：Info 及以上，不输出敏感字段
+
+5 级日志体系（TRACE < DEBUG < INFO < WARN < ERROR）：
+
+| 级别 | Zap 值 | 用途 | 环境 |
+|------|--------|------|------|
+| TRACE | -2（自定义） | 函数入口/出口、变量 dump、缓存逐 key 命中 | 开发环境 |
+| DEBUG | -1 | 请求/响应 payload（脱敏）、SQL、Redis 命令、配置 dump | 开发环境 |
+| INFO | 0 | 请求完成、服务启停、健康检查、缓存预热完成 | 生产最低 |
+| WARN | 1 | 重试、降级触发、限流预警、非安全认证失败 | 全环境 |
+| ERROR | 2 | 未处理错误、依赖故障、数据不一致、panic 恢复 | 全环境 |
+
+- 结构化日志：Zap JSON 格式（Go）/ logging JSON 格式（Python）
+- 标准字段：request_id、latency、status、method、path
+- 环境级别：开发=TRACE 及以上、Staging=DEBUG 及以上、生产=INFO 及以上
+- 敏感字段在任何级别均不输出：password、token、secret、key
+
+**错误处理规范**：
+
+错误码分类（5 类）：
+
+| 错误码 | HTTP 状态码 | 含义 |
+|--------|------------|------|
+| `VALIDATION` | 400 | 输入校验失败 |
+| `NOT_FOUND` | 404 | 资源不存在 |
+| `AUTH` | 401/403 | 认证/授权失败 |
+| `TIMEOUT` | 408 | 操作超时 |
+| `INTERNAL` | 500 | 系统内部错误 |
+
+- **Error wrapping**：每层用 `fmt.Errorf("layer.action: %w", err)` 包裹，链路自底向上可读
+- **错误响应格式**：`{"code":"NOT_FOUND","message":"user not found","details":{},"request_id":"..."}`
+- **错误-日志映射**：VALIDATION/NOT_FOUND → WARN，AUTH → WARN（非安全）/ ERROR（安全），TIMEOUT/INTERNAL → ERROR
+- **No-panic**：panic 仅允许在 middleware 层 recover，业务逻辑禁止使用 panic
+- **优雅降级**：依赖故障时优先返回缓存/旧数据，而非整体失败
+- Go 使用 `AppError` 结构体，Python 使用 `AppException` 基类，详见各子 Skill
 
 ---
 
