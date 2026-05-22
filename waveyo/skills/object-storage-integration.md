@@ -75,7 +75,7 @@ func (s *StorageClient) PresignGet(ctx context.Context, key string, ttl time.Dur
         opts.Expires = ttl
     })
     if err != nil {
-        return "", fmt.Errorf("presign get: %w", err)
+        return "", NewInternalError("presign get failed", err)
     }
     return req.URL, nil
 }
@@ -122,7 +122,7 @@ func (s *StorageClient) ListObjects(ctx context.Context, prefix string, limit in
     for paginator.HasMorePages() && pageNum < 1 {
         page, err := paginator.NextPage(ctx)
         if err != nil {
-            return nil, "", fmt.Errorf("list objects: %w", err)
+            return nil, "", NewInternalError("list objects failed", err)
         }
         for _, obj := range page.Contents {
             objects = append(objects, ObjectInfo{
@@ -161,7 +161,7 @@ func (m *MirrorSync) SyncObject(ctx context.Context, key string) error {
     // 2. 从源站下载
     obj, err := m.source.GetObject(ctx, key)
     if err != nil {
-        return fmt.Errorf("get source: %w", err)
+        return NewInternalError("get source object failed", err)
     }
     defer obj.Body.Close()
 
@@ -173,7 +173,7 @@ func (m *MirrorSync) SyncObject(ctx context.Context, key string) error {
         ContentType: obj.ContentType,
     })
     if err != nil {
-        return fmt.Errorf("put target: %w", err)
+        return NewInternalError("put target object failed", err)
     }
 
     // 4. 标记已同步
@@ -193,5 +193,7 @@ func (m *MirrorSync) SyncObject(ctx context.Context, key string) error {
 - 镜像同步失败需要重试逻辑（exponential backoff）
 - CDN 回源策略优先于直连 S3，减少源站压力
 - 所有 S3 操作设置 context timeout
+- S3 错误映射：NoSuchBucket→NOT_FOUND、AccessDenied→AUTH、timeout→TIMEOUT、网络错误→INTERNAL+重试
+- S3 操作失败日志级别为 ERROR，带结构化字段（bucket、key、operation、error）
 
 > 来源：WaveYo / YoOSF-API 和 Koishi-Mirror 的 S3/COS 集成模式。

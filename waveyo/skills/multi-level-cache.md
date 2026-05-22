@@ -90,14 +90,19 @@ func (c *RedisCache) Get(ctx context.Context, key string) (interface{}, error) {
 
     // 2. 查 Redis
     val, err := c.client.Get(ctx, key).Result()
-    if err == nil {
-        metrics.CacheHit("redis", key)
-        // 异步回填本地
-        go c.backfillLocal(key, val)
-        return val, nil
+    if err == redis.Nil {
+        // 缓存 miss（预期行为，非错误）
+        metrics.CacheMiss(key)
+        return nil, ErrCacheMiss
     }
-    metrics.CacheMiss(key)
-    return nil, ErrCacheMiss
+    if err != nil {
+        // 真正的错误（网络超时、连接拒绝等）
+        return nil, fmt.Errorf("redis get %s: %w", key, err)
+    }
+    metrics.CacheHit("redis", key)
+    // 异步回填本地
+    go c.backfillLocal(key, val)
+    return val, nil
 }
 
 func (c *RedisCache) Set(ctx context.Context, key string, value interface{}) error {
@@ -186,6 +191,39 @@ func RecordMiss() {
 - Redis TTL < 源站数据更新周期
 - 预签名 URL：小文件 1h，大文件 24h
 - 文件列表：根据更新频率，通常 5-30 分钟
+
+---
+
+## 错误处理
+
+**Cache miss vs Cache error 区分**：
+
+```go
+var ErrCacheMiss = errors.New("cache miss")
+
+// Get 中的错误区分：
+// redis.Nil → 缓存 miss（预期，非错误，返回 ErrCacheMiss）
+// 网络超时/连接拒绝 → 真正的错误（返回 fmt.Errorf + 原始 error）
+```
+
+- `redis.Nil` 是 miss（预期行为），不是错误
+- 网络超时、连接拒绝才是真正的错误
+- 不要将 miss 和 error 混为一谈
+
+**优雅降级**：
+
+```
+Redis 故障 → 穿透到源站（Layer 3），日志 WARN
+源站也失败 → 返回 error，日志 ERROR
+```
+
+**预热错误处理**：
+
+```go
+// 预热中的错误分级：
+// 单 key 失败 → 日志 WARN，继续处理其他 key
+// 聚合失败（超过阈值）→ 日志 ERROR，汇报预热失败
+```
 
 ---
 

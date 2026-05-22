@@ -144,34 +144,85 @@ func (cm *ConfigManager) Rollback(version int) error {
 
 ```go
 type AuditEntry struct {
-    Timestamp  time.Time `json:"timestamp"`
-    Host       string    `json:"host"`
-    Backend    string    `json:"backend"`
-    Method     string    `json:"method"`
-    Path       string    `json:"path"`
-    Status     int       `json:"status"`
+    Timestamp  time.Time     `json:"timestamp"`
+    Level      string        `json:"level"`               // info / warn / error
+    Host       string        `json:"host"`
+    Backend    string        `json:"backend"`
+    Method     string        `json:"method"`
+    Path       string        `json:"path"`
+    Status     int           `json:"status"`
     Latency    time.Duration `json:"latency"`
-    ClientIP   string    `json:"client_ip"`
-    AuthUser   string    `json:"auth_user,omitempty"`
+    ClientIP   string        `json:"client_ip"`
+    AuthUser   string        `json:"auth_user,omitempty"`
 }
 
-func (g *Gateway) auditLog(host, backend string, r *http.Request) {
+func (g *Gateway) auditLog(host, backend string, r *http.Request, status int) {
+    // 按响应状态码映射日志级别
+    level := "info"
+    if status >= 500 {
+        level = "error"
+    } else if status >= 400 {
+        level = "warn"
+    }
+
     entry := AuditEntry{
         Timestamp: time.Now(),
+        Level:     level,
         Host:      host,
         Backend:   backend,
         Method:    r.Method,
         Path:      r.URL.Path,
+        Status:    status,
         ClientIP:  r.RemoteAddr,
     }
     g.logger.Info("gateway_request",
+        zap.String("level", entry.Level),
         zap.String("host", entry.Host),
         zap.String("backend", entry.Backend),
         zap.String("method", entry.Method),
         zap.String("path", entry.Path),
+        zap.Int("status", status),
     )
 }
 ```
+
+---
+
+## 错误响应标准
+
+```go
+type ErrorResponse struct {
+    Code      string      `json:"code"`
+    Message   string      `json:"message"`
+    Details   interface{} `json:"details,omitempty"`
+    RequestID string      `json:"request_id"`
+}
+
+// 网关错误码
+const (
+    ErrUpstreamTimeout    = "UPSTREAM_TIMEOUT"
+    ErrUpstreamUnavail    = "UPSTREAM_UNAVAILABLE"
+    ErrAuthFailed         = "AUTH_FAILED"
+    ErrRouteNotFound      = "ROUTE_NOT_FOUND"
+)
+
+// 网关错误-HTTP 状态码映射
+var gatewayCodeToStatus = map[string]int{
+    ErrUpstreamTimeout: 504,
+    ErrUpstreamUnavail: 502,
+    ErrAuthFailed:      401,
+    ErrRouteNotFound:   404,
+}
+```
+
+网关错误-日志级别映射：
+
+| 错误码 | 日志级别 | 原因 |
+|--------|---------|------|
+| `ROUTE_NOT_FOUND` | DEBUG | 多为机器人扫描 |
+| `AUTH_FAILED` | WARN | 认证失败 |
+| `UPSTREAM_TIMEOUT` | ERROR | 上游超时 |
+| `UPSTREAM_UNAVAILABLE` | ERROR | 上游不可达 |
 
 ---
 
