@@ -1,7 +1,7 @@
 # WaveYo 技能蒸馏 — 证据交叉索引
 
-> 生成时间：2026-05-15
-> 证据来源：resume-data/ 画像 13 文件 + 源码仓库 25 个
+> 生成时间：2026-06-25
+> 证据来源：resume-data/ 画像 13 文件 + 源码仓库 27 个
 
 ## Go 后端工程
 
@@ -51,6 +51,31 @@
 | 构建/发布脚本 | 高 | backend-05 | Koishi-Mirror, YoOSF-API | — |
 | .env.example 模式 | 高 | backend-01 | 全部 Go 项目 | — |
 | 健康检查模板 | 中 | backend-05 | 4+ 仓库 | — |
+
+## Rust 系统工具 / 桌面应用
+
+| 技能维度 | 证据强度 | 画像来源 | 源码验证仓库 | 边界约束 |
+|---|---|---|---|---|
+| Tauri 2.0 桌面应用 | 高 | — | freessh（本地仓库） | — |
+| 统一 Trait 模式（TerminalBackend） | 高 | — | freessh（core/terminal_backend.rs） | — |
+| 连接池 + 心跳 + 自动重连 | 高 | — | freessh（terminal_pool.rs, sftp_pool.rs） | — |
+| AES-256-GCM 加密存储 | 高 | — | freessh（core/crypto.rs） | PBKDF2 ≥200k 迭代 |
+| Tauri invoke/emit 事件驱动 | 高 | — | freessh（commands/, lib.rs） | — |
+| Serde camelCase 跨语言互操作 | 高 | — | freessh（models/*.rs） | — |
+| xterm.js + Monaco Editor 集成 | 高 | — | freessh（src/views/Terminal.vue, FileEditor.vue） | — |
+| Split-pane 布局系统 | 中 | — | freessh（components/pane/） | — |
+| 前端 TTL 数据缓存 | 中 | — | freessh（stores/dataCache.ts） | — |
+| Catppuccin 主题系统 | 中 | — | freessh（src/styles/main.css） | — |
+
+## 多语言 Monorepo + 代码生成
+
+| 技能维度 | 证据强度 | 画像来源 | 源码验证仓库 | 边界约束 |
+|---|---|---|---|---|
+| 单一数据源 + 多目标代码生成 | 高 | — | cn-area（scripts/generate.py） | 生成产物不手动编辑 |
+| 多语言统一 API 设计 | 高 | — | cn-area（Go/Python/TS 6 函数同构） | 各语言惯用写法 |
+| Makefile 驱动工作流 | 高 | — | cn-area（Makefile） | — |
+| VERSION 脚本传播 | 高 | — | cn-area（scripts/set-version.py） | — |
+| GitHub Actions 多语言 CI 矩阵 | 中 | — | cn-area（.github/workflows/） | — |
 
 ## 硬约束（从边界文件提取）
 

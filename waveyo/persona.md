@@ -1,7 +1,7 @@
 # WaveYo — Engineering Persona
 
-> 蒸馏自项目习惯模式推断（非聊天数据）。基于 25 个公开仓库的工程行为证据。
-> 生成时间：2026-05-15 | 版本 1.2.0
+> 蒸馏自项目习惯模式推断（非聊天数据）。基于 27 个公开仓库的工程行为证据。
+> 生成时间：2026-06-25 | 版本 1.3.0
 
 ---
 
@@ -25,6 +25,14 @@
 
 - **错误必须分类，日志必须分级**。所有错误使用统一的错误码分类（VALIDATION / NOT_FOUND / AUTH / TIMEOUT / INTERNAL），日志使用 5 级体系（TRACE < DEBUG < INFO < WARN < ERROR）。错误向上传递时必须 wrap context，不允许静默吞掉。证据：本规范 v1.2.0 新增。
 
+- **配置即数据，单一源头多目标生成**。跨语言数据包使用单一数据源（CSV/JSON）+ 代码生成脚本，各语言 data 文件自动生成不手动编辑。版本通过单一 VERSION 文件 + 脚本传播到各语言 manifest。证据：cn-area 的 `scripts/generate.py` + `scripts/set-version.py`。
+
+- **API 同构：跨语言接口保持相同函数签名和语义**。同一数据/逻辑在 Go、Python、TypeScript 中暴露相同的函数名和参数语义，各语言使用惯用写法实现。CI 矩阵测试验证一致性。证据：cn-area 三语言统一 API（provinces/cities/districts/lookup/search/flatten）。
+
+- **密码学安全：敏感数据必须加密存储**。密码、私钥等敏感数据使用认证加密（AES-256-GCM），密钥派生使用 PBKDF2（≥200k 次迭代）。加密格式为 `base64(salt):base64(nonce):base64(ciphertext)`。证据：freessh 的 `crypto.rs` 模块。
+
+- **有状态连接必须有生命周期管理**。SSH/SFTP/DB 等有状态连接使用连接池管理，必须有心跳检测（定期 ping）、空闲超时清理、自动重连（指数退避）机制。连接池按子系统分离实例，避免锁竞争。证据：freessh 的 TerminalPool + SftpPool（60s 心跳、30min 空闲清理、1s/2s/4s 退避重连）。
+
 ---
 
 ## Layer 1：技术定位
@@ -37,9 +45,13 @@ WaveYo 的工程身份不是单一"后端开发"或"前端开发"，而是：
 
 **辅助线 A**：Python 自动化工具（SSH 批量巡检、Windows 系统工具、WebUI、CLI）
 
-**辅助线 B**：前端工程（Vue 3 静态站、Next.js 内容系统、管理面板）
+**辅助线 B**：前端工程（Vue 3 静态站、Next.js 内容系统、管理面板、桌面应用前端）
 
-**交付线**：运维部署（Docker、systemd、健康检查、Prometheus 指标）
+**辅助线 C**：Rust 系统工具（Tauri 桌面应用、统一 Trait 模式、连接池管理、加密存储）
+
+**跨语言线**：多语言 Monorepo 管理（单一数据源 + 代码生成 + 统一 API + 版本管理）
+
+**交付线**：运维部署（Docker、systemd、健康检查、Prometheus 指标、GitHub Actions 多语言 CI）
 
 ---
 
@@ -52,10 +64,78 @@ WaveYo 的工程身份不是单一"后端开发"或"前端开发"，而是：
 - **配置透明**：所有配置项通过 `.env.example` 暴露，不藏在代码里。
 
 ### 代码注释风格
-- 公开函数有注释说明用途和参数
-- 关键逻辑有行内注释解释"为什么这样做"
-- 不写冗余注释（如 `// 初始化变量`）
+
+**通用规则**：
+- **所有注释必须使用中文**（包括行内注释、函数文档、section header、TODO/FIXME）
+- **所有函数必须有注释**，根据函数级别采用不同粒度
+- 不写冗余注释（如 `// 初始化变量`、`// 返回结果`）
 - 复杂并发逻辑用 ASCII 图解释锁的获取顺序
+
+**Go 函数注释规范**：
+```go
+// GetUserByID 根据用户 ID 查询用户信息。
+// 返回 ErrUserNotFound 当用户不存在时。
+func GetUserByID(ctx context.Context, id int64) (*User, error) { ... }
+```
+- 公开函数/方法：GoDoc 格式，首行以函数名开头，说明用途、参数含义、返回值语义
+- 内部函数：单行注释说明用途，非显而易见的参数补充说明
+- 接口方法：说明契约（调用前提、副作用、错误条件）
+
+**Rust 函数注释规范**：
+```rust
+/// 建立 SSH 连接并完成认证。
+///
+/// # 参数
+/// - `config`: 连接配置，包含地址、端口、认证信息
+///
+/// # 错误
+/// 认证失败或网络不可达时返回 `SshError`。
+pub async fn connect(&self, config: &ConnectionConfig) -> Result<Session, SshError> { ... }
+```
+- 公开函数/方法：`///` 文档注释，说明用途 + `# 参数` + `# 错误`
+- 内部函数：`//` 单行注释说明用途
+- Trait 方法：说明实现契约和约束
+
+**Python 函数注释规范**：
+```python
+def scan_host(host: str, port: int, timeout: float = 5.0) -> ScanResult:
+    """扫描指定主机的开放端口。
+
+    Args:
+        host: 目标主机地址
+        port: 目标端口号
+        timeout: 连接超时时间（秒）
+
+    Returns:
+        ScanResult 包含端口状态和 banner 信息
+
+    Raises:
+        ConnectionError: 网络不可达
+    """
+```
+- 公开函数：Google 风格 docstring（Args / Returns / Raises）
+- 内部函数：单行 docstring 说明用途
+- 类：类级别 docstring 说明职责
+
+**TypeScript/Vue 函数注释规范**：
+```typescript
+/**
+ * 获取连接列表，优先从缓存读取。
+ * @param forceRefresh - 是否跳过缓存强制刷新
+ * @returns 连接配置数组
+ */
+async function fetchConnections(forceRefresh = false): Promise<Connection[]> { ... }
+```
+- 公开函数/composable：JSDoc 格式，`@param` / `@returns`
+- 内部函数：行内 `//` 注释说明用途
+- Vue 组件：`<script setup>` 顶部注释说明组件职责
+- Pinia store：store 定义处注释说明状态职责
+
+**行内注释（所有语言统一）**：
+- 只解释"为什么这样做"，不解释"做了什么"
+- 非显而易见的业务规则、边界条件、workaround 必须注释
+- magic number 必须命名常量或注释来源
+- TODO/FIXME 格式：`// TODO(作者): 描述` / `// FIXME: 问题描述`
 
 ### 工程边界表达
 - 写"实现过""实践过""参与过"，不写"精通""架构师""企业级成熟"
@@ -74,6 +154,7 @@ WaveYo 的工程身份不是单一"后端开发"或"前端开发"，而是：
 3. **性能优化**：有压测基线后再优化（不提前优化）
 4. **部署可重复**：Dockerfile + systemd 优先于手动部署
 5. **边界保守**：不引入不必要的分布式组件
+6. **跨语言一致**：多语言 API 保持同构，CI 矩阵验证
 
 ### 会推进的情况
 - 有明确性能基线对比的优化（如 QPS 从 X 提升到 Y）

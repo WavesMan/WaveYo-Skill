@@ -1,8 +1,8 @@
 # WaveYo Skill
 
-> *将一位开发者 25 个公开仓库中反复出现的工程模式、技术习惯和架构判断，蒸馏为一套可被 AI 加载的复用技能。*
+> *将一位开发者 27 个公开仓库中反复出现的工程模式、技术习惯和架构判断，蒸馏为一套可被 AI 加载的复用技能。*
 
-[![Skill Type](https://img.shields.io/badge/Skill-Engineering-blue)](./waveyo/SKILL.md) [![Version](https://img.shields.io/badge/version-1.2.0-green)](./waveyo/meta.json) [![DeepSeek](https://img.shields.io/badge/DeepSeek_TUI-AgentSkills-purple)](https://github.com/deepseek) [![Claude](https://img.shields.io/badge/Claude_Code-AgentSkills-0e6eb8)](https://www.anthropic.com/) [![Cursor](https://img.shields.io/badge/Cursor-AgentSkills-00b4ff)](https://www.cursor.so/) [![Codex](https://img.shields.io/badge/Codex-AgentSkills-8a2be2)](https://openai.com/blog/codex)
+[![Skill Type](https://img.shields.io/badge/Skill-Engineering-blue)](./waveyo/SKILL.md) [![Version](https://img.shields.io/badge/version-1.3.0-green)](./waveyo/meta.json) [![DeepSeek](https://img.shields.io/badge/DeepSeek_TUI-AgentSkills-purple)](https://github.com/deepseek) [![Claude](https://img.shields.io/badge/Claude_Code-AgentSkills-0e6eb8)](https://www.anthropic.com/) [![Cursor](https://img.shields.io/badge/Cursor-AgentSkills-00b4ff)](https://www.cursor.so/) [![Codex](https://img.shields.io/badge/Codex-AgentSkills-8a2be2)](https://openai.com/blog/codex)
 
 ---
 
@@ -11,8 +11,8 @@
 **WaveYo** 是对 GitHub 开发者 WavesMan 的工程技能蒸馏产物。它不是一份简历，也不是一个静态的代码模板库——而是一个加载后能让 AI 以 WaveYo 的工程思维完成工作的 **DeepSeek Skill**。
 
 加载后，AI 会获得：
-- **7 条硬工程原则**：缓存必加锁、服务必带 health、README 先于代码……
-- **4 个技术领域的完整能力**：Go 后端 / Python 自动化 / 前端工程 / 运维交付
+- **11 条硬工程原则**：缓存必加锁、服务必带 health、README 先于代码、配置即数据、API 同构、密码学安全、连接生命周期管理……
+- **6 个技术领域的完整能力**：Go 后端 / Python 自动化 / 前端工程 / Rust 系统工具 / 多语言 Monorepo / 运维交付
 - **7 个独立可复用的子 Skill**：从 Go 脚手架到多级缓存到项目交付，新增 Git 协作规范
 - **5 层技术决策框架**：正确性 > 可观测性 > 性能 > 部署 > 扩展
 - **人机协作规范**：角色边界、信任梯度、跨会话状态传递、PR 审查报告自动生成
@@ -21,27 +21,140 @@
 
 ## 安装
 
-### 从 GitHub 安装（推荐）
+### 人工安装
+
+#### 从 GitHub 安装（推荐）
 
 ```bash
 /skill install github:WavesMan/WaveYo-Skill
 ```
 
-### 更新已安装的 Skill
+#### 更新已安装的 Skill
 
 ```bash
 /skill update waveyo
 ```
 
-### 直接 clone 到全局 skills 目录
+#### 直接 clone 到全局 skills 目录
 
 ```bash
 git clone https://github.com/WavesMan/WaveYo-Skill.git ~/.deepseek/skills/waveyo
 ```
 
-### 手动复制
+#### 手动复制
 
 将 `waveyo/` 目录复制到 `~/.deepseek/skills/` 下。
+
+---
+
+### AI Agent 安装
+
+以下方式面向 AI Agent（Claude Code、Cursor、Codex、DeepSeek 等）的自动化安装场景。
+
+工作前需要根据 AI Agent 所属系统环境，检查工具依赖情况： `git` `curl` `wget`，根据环境选择下述安装方式
+
+#### 方式 1：Git Clone（推荐）
+
+适用于有 shell 执行能力的 Agent。克隆后仅需 `waveyo/` 目录。
+
+```bash
+# 克隆到临时目录
+git clone --depth 1 https://github.com/WavesMan/WaveYo-Skill.git /tmp/waveyo-skill
+
+# 按平台复制到 skills 目录
+# Claude Code
+cp -r /tmp/waveyo-skill/waveyo ~/.claude/skills/waveyo
+
+# DeepSeek TUI
+cp -r /tmp/waveyo-skill/waveyo ~/.deepseek/skills/waveyo
+
+# Cursor（项目级）
+cp -r /tmp/waveyo-skill/waveyo .cursor/skills/waveyo
+
+# 通用（自定义路径）
+cp -r /tmp/waveyo-skill/waveyo <YOUR_SKILLS_DIR>/waveyo
+
+# 清理
+rm -rf /tmp/waveyo-skill
+```
+
+#### 方式 2：GitHub API（无需 git）
+
+适用于无 git 但可发 HTTP 请求的 Agent。通过 GitHub API 下载 tarball 并解压。
+
+```bash
+# 下载 main 分支 tarball
+curl -sL https://api.github.com/repos/WavesMan/WaveYo-Skill/tarball/main -o /tmp/waveyo-skill.tar.gz
+
+# 解压（自动创建顶层目录）
+mkdir -p /tmp/waveyo-skill
+tar -xzf /tmp/waveyo-skill.tar.gz -C /tmp/waveyo-skill --strip-components=1
+
+# 复制 waveyo/ 到目标目录
+cp -r /tmp/waveyo-skill/waveyo ~/.claude/skills/waveyo
+
+# 清理
+rm -rf /tmp/waveyo-skill /tmp/waveyo-skill.tar.gz
+```
+
+#### 方式 3：Curl / Wget 直接下载
+
+适用于仅支持基础 HTTP 的受限环境。下载 zipball 并解压。
+
+```bash
+# Curl 方式
+curl -sL https://github.com/WavesMan/WaveYo-Skill/archive/refs/heads/main.zip -o /tmp/waveyo-skill.zip
+unzip -q /tmp/waveyo-skill.zip -d /tmp/waveyo-skill
+cp -r /tmp/waveyo-skill/WaveYo-Skill-main/waveyo ~/.claude/skills/waveyo
+rm -rf /tmp/waveyo-skill /tmp/waveyo-skill.zip
+
+# Wget 方式
+wget -q https://github.com/WavesMan/WaveYo-Skill/archive/refs/heads/main.zip -O /tmp/waveyo-skill.zip
+unzip -q /tmp/waveyo-skill.zip -d /tmp/waveyo-skill
+cp -r /tmp/waveyo-skill/WaveYo-Skill-main/waveyo ~/.claude/skills/waveyo
+rm -rf /tmp/waveyo-skill /tmp/waveyo-skill.zip
+```
+
+#### 方式 4：GitHub API 单文件获取
+
+适用于只需加载部分文件的 Agent（按需拉取，不下载整个仓库）。
+
+```bash
+# 获取文件列表
+curl -sL https://api.github.com/repos/WavesMan/WaveYo-Skill/contents/waveyo | jq -r '.[].name'
+
+# 下载单个文件（以 SKILL.md 为例）
+curl -sL https://raw.githubusercontent.com/WavesMan/WaveYo-Skill/main/waveyo/SKILL.md
+
+# 下载单个文件并保存
+curl -sL https://raw.githubusercontent.com/WavesMan/WaveYo-Skill/main/waveyo/work.md -o ~/.claude/skills/waveyo/work.md
+```
+
+#### 安装验证
+
+安装完成后，Agent 可通过以下方式验证：
+
+```bash
+# 检查 SKILL.md 存在且可读
+cat ~/.claude/skills/waveyo/SKILL.md | head -5
+
+# 检查版本号
+grep "version:" ~/.claude/skills/waveyo/SKILL.md
+
+# 检查子 Skill 完整性
+ls ~/.claude/skills/waveyo/skills/
+# 预期输出：7 个 .md 文件
+```
+
+#### 平台路径速查
+
+| Agent 平台 | Skills 目录 |
+|---|---|
+| Claude Code | `~/.claude/skills/` |
+| DeepSeek TUI | `~/.deepseek/skills/` |
+| Cursor | `.cursor/skills/`（项目级）或 `~/.cursor/skills/`（全局） |
+| Codex | `~/.codex/skills/` |
+| 通用 | 自定义，确保 Agent 启动时可读取 |
 
 ---
 
@@ -122,7 +235,7 @@ WaveYo 作为 AI 助手与人类协作时，遵循 `collaboration.md` 中定义�
 
 | 数据源 | 数量 | 内容 |
 |---|---|---|
-| 源码仓库 | 25 个（9 后端 + 16 前端） | 实际代码、目录结构、部署配置 |
+| 源码仓库 | 27 个（10 后端 + 16 前端 + 1 本地） | 实际代码、目录结构、部署配置 |
 | 画像分析文件 | 20 个 | 技术能力矩阵、职责边界、综合画像 |
 | 边界约束文件 | 3 个 | 表达边界、fork 声明规则、禁用词清单 |
 | 协作会话记录 | 1 场全流程 | 83 行 reflog + 5 个 PR 完整生命周期 |
@@ -135,7 +248,7 @@ WaveYo 作为 AI 助手与人类协作时，遵循 `collaboration.md` 中定义�
 colleague-skill                 →    WaveYo 适配
 ─────────────────────────────────────────────────
 Layer 0: 性格标签 → 行为规则     →    工程原则（代码证据推断）
-Layer 1: 公司/职级               →    技术定位（Go 主线 + 3 辅助线）
+Layer 1: 公司/职级               →    技术定位（Go 主线 + 4 辅助线 + 跨语言线）
 Layer 2: 口头禅/说话方式         →    工程表达习惯（README 风格等）
 Layer 3: 人际决策               →    技术决策模式（优先级排序）
 Layer 4: 人际行为               →    协作行为（fork 标注 / 文档交接 / 人机协作）
@@ -154,6 +267,7 @@ Layer 5: 雷区/边界              →    技术红线（禁止夸大 / 边界�
 
 ## 版本
 
+- **1.3.0** (2026-06-25)：新增 2 个仓库蒸馏（cn-area + freessh）+ 声明优化。新增 Rust/Tauri 桌面应用开发、多语言 Monorepo + 代码生成、解耦规则统一归档。扩展全函数中文注释规范（GoDoc/Rust///Python docstring/JSDoc 四语言统一）。新增文件行数限制（前端 600 / 后端 800）。覆盖仓库数 25 → 27。
 - **1.2.0** (2026-05-22)：新增 5 级日志体系（TRACE < DEBUG < INFO < WARN < ERROR）+ 统一错误处理规范（AppError/AppException 分类、错误码体系、错误中间件、错误-日志级别映射、缓存 miss/error 区分）。
 - **1.1.0** (2026-05-17)：新增人机协作规范体系 — `collaboration.md` + `git-collaboration` 子 Skill。persona.md Layer 4 扩展人机协作小节，work.md 扩展 Git 协作流程和 PR 审查报告生成。
 - **1.0.0** (2026-05-15)：初始蒸馏，覆盖 25 个仓库 + 20 个画像文件
@@ -162,4 +276,4 @@ Layer 5: 雷区/边界              →    技术红线（禁止夸大 / 边界�
 
 ## 许可
 
-MIT
+[MIT License](LICENSE)
