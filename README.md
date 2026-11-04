@@ -2,7 +2,7 @@
 
 > *将一位开发者 27 个公开仓库中反复出现的工程模式、技术习惯和架构判断，蒸馏为一套可被 AI 加载的复用技能。*
 
-[![Skill Type](https://img.shields.io/badge/Skill-Engineering-blue)](./waveyo/SKILL.md) [![Version](https://img.shields.io/badge/version-1.3.0-green)](./waveyo/meta.json) [![DeepSeek](https://img.shields.io/badge/DeepSeek_TUI-AgentSkills-purple)](https://github.com/deepseek) [![Claude](https://img.shields.io/badge/Claude_Code-AgentSkills-0e6eb8)](https://www.anthropic.com/) [![Cursor](https://img.shields.io/badge/Cursor-AgentSkills-00b4ff)](https://www.cursor.so/) [![Codex](https://img.shields.io/badge/Codex-AgentSkills-8a2be2)](https://openai.com/blog/codex)
+[![Skill Type](https://img.shields.io/badge/Skill-Engineering-blue)](./waveyo/SKILL.md) [![Version](https://img.shields.io/badge/version-2.0.0-green)](./waveyo/SKILL.md) [![DeepSeek](https://img.shields.io/badge/DeepSeek_TUI-AgentSkills-purple)](https://github.com/deepseek) [![Claude](https://img.shields.io/badge/Claude_Code-AgentSkills-0e6eb8)](https://www.anthropic.com/) [![Cursor](https://img.shields.io/badge/Cursor-AgentSkills-00b4ff)](https://www.cursor.so/) [![Codex](https://img.shields.io/badge/Codex-AgentSkills-8a2be2)](https://openai.com/blog/codex)
 
 ---
 
@@ -11,11 +11,11 @@
 **WaveYo** 是对 GitHub 开发者 WavesMan 的工程技能蒸馏产物。它不是一份简历，也不是一个静态的代码模板库——而是一个加载后能让 AI 以 WaveYo 的工程思维完成工作的 **DeepSeek Skill**。
 
 加载后，AI 会获得：
-- **11 条硬工程原则**：缓存必加锁、服务必带 health、README 先于代码、配置即数据、API 同构、密码学安全、连接生命周期管理……
+- **通用工程底线**：命名、注释、日志、最小闭环、界面状态、上游错误、协作与 Git
 - **6 个技术领域的完整能力**：Go 后端 / Python 自动化 / 前端工程 / Rust 系统工具 / 多语言 Monorepo / 运维交付
-- **7 个独立可复用的子 Skill**：从 Go 脚手架到多级缓存到项目交付，新增 Git 协作规范
+- **9 个独立可复用的专题**：从界面规范、上游错误处理，到命名、日志、CI 与 Git 协作
 - **5 层技术决策框架**：正确性 > 可观测性 > 性能 > 部署 > 扩展
-- **人机协作规范**：角色边界、信任梯度、跨会话状态传递、PR 审查报告自动生成
+- **人机协作规范**：任务范围区分、角色边界、信任梯度、跨会话状态传递、PR 审查报告自动生成
 
 ---
 
@@ -139,11 +139,11 @@ curl -sL https://raw.githubusercontent.com/WavesMan/WaveYo-Skill/main/waveyo/wor
 cat ~/.claude/skills/waveyo/SKILL.md | head -5
 
 # 检查版本号
-grep "version:" ~/.claude/skills/waveyo/SKILL.md
+grep "^version:" ~/.claude/skills/waveyo/SKILL.md
 
-# 检查子 Skill 完整性
+# 检查专题完整性
 ls ~/.claude/skills/waveyo/skills/
-# 预期输出：7 个 .md 文件
+# 预期输出：9 个 .md 文件
 ```
 
 #### 平台路径速查
@@ -164,25 +164,27 @@ ls ~/.claude/skills/waveyo/skills/
 # 激活完整 WaveYo 工程能力
 /waveyo
 
-# 独立加载子 Skill
-/skill waveyo/skills/go-service-scaffold
-/skill waveyo/skills/multi-level-cache
-/skill waveyo/skills/git-collaboration
+# 独立加载专题
+/skill waveyo/skills/frontend-ui-ux
+/skill waveyo/skills/upstream-error-handling
+/skill waveyo/skills/git-workflow
 ```
 
 ---
 
-## 子 Skill 概览
+## 专题概览
 
-| 子 Skill | 触发场景 | 核心内容 |
+| 专题 | 触发场景 | 核心内容 |
 |---|---|---|
-| `go-service-scaffold` | 新建 Go 后端项目 | 标准布局、Viper 配置、Zap 日志、健康检查、优雅关闭 |
-| `multi-level-cache` | 引入缓存优化 | 本地 LRU → Redis → 源站，分片锁保护，异步刷新，Prometheus 指标 |
-| `object-storage-integration` | 接入 S3/COS/OSS | 预签名 URL、CDN 优先下载、游标分页、镜像同步编排 |
-| `gateway-bff-pattern` | 设计网关或 BFF | 控制面/数据面分离、Host 路由、负载均衡、审计日志、配置回滚 |
-| `python-ssh-audit` | Linux 批量巡检/修复 | audit/fix 模式分离、ThreadPoolExecutor、多格式报告、进度心跳 |
-| `project-delivery` | 服务打包交付 | Dockerfile 多阶段构建、docker-compose、systemd unit、构建脚本 |
-| `git-collaboration` | 分支/提交/PR/Code Review | Angular Commit 规范、PR 模板、Review Checklist、合并清理流程 |
+| `frontend-ui-ux` | 页面结构 / 视觉 / 交互 / 状态反馈 / 可访问性 | 二级页与布局、Select 与 Dropdown 判据、浮层与导航、返回与吸顶、异步四态、筛选分页、操作反馈、十条视觉动效、动态验收 |
+| `upstream-error-handling` | 接入 SDK / HTTP / RPC / 驱动 / 对象存储 | 保留错误链、失败类型区分、结构化诊断、取消与截止、公开映射、日志脱敏、诚实归因、幂等重试、验证 |
+| `naming` | 新增标识符 | Entity-First / Noun-First、分层映射表、禁用泛词清单 |
+| `comment-style` | 写注释 | 全中文、文件行头、三档函数注释、反例对照、锁顺序 ASCII 图 |
+| `logging` | 加日志 / 调级别 | 五级体系、TRACE 实现、字段标准、敏感字段黑名单 |
+| `minimal-prototype` | 接新需求 | 最小闭环、真实数据库验证与隔离单测分工、不提前引入组件 |
+| `ai-collaboration` | AI 参与编码/审查/交付 | 审查报告模板、原子提交、跨会话延续、诊断顺序、行为红线 |
+| `git-workflow` | 分支 / 提交 / PR / Review | Commit 规范、原子拆分、PR 模板与 Checklist、合并策略、清理流程 |
+| `cicd-actions` | CI 配置与排障 | Runner 部署、三层代理、TLS 根因、workflow 模板、排障速查 |
 
 ---
 
@@ -191,21 +193,22 @@ ls ~/.claude/skills/waveyo/skills/
 ```
 waveyo-skill/
 ├── waveyo/
-│   ├── SKILL.md                          # 主入口（AgentSkills 标准）
+│   ├── SKILL.md                          # 主入口：定位、优先级、底线、索引
 │   ├── work.md                           # 技术工作技能
 │   ├── persona.md                        # 5 层工程人格
-│   ├── collaboration.md                  # 人机协作规范（v1.1.0 新增）
-│   ├── meta.json                         # 元数据
+│   ├── collaboration.md                  # 人机协作规范
 │   ├── skills/
-│   │   ├── go-service-scaffold.md        # Go 服务脚手架
-│   │   ├── multi-level-cache.md          # 多级缓存模式
-│   │   ├── object-storage-integration.md # 对象存储集成
-│   │   ├── gateway-bff-pattern.md        # 网关/BFF 模式
-│   │   ├── python-ssh-audit.md           # Python SSH 巡检
-│   │   ├── project-delivery.md           # 项目交付部署
-│   │   └── git-collaboration.md          # Git 协作规范（v1.1.0 新增）
-│   └── versions/
-│       └── v1.0.0.md                     # v1.0.0 版本快照
+│   │   ├── frontend-ui-ux.md             # 前端 UI/UX 设计要求（v2.0.0 新增）
+│   │   ├── upstream-error-handling.md    # 上游错误正确处理（v2.0.0 新增）
+│   │   ├── naming.md                     # 命名规范
+│   │   ├── comment-style.md              # 注释规范
+│   │   ├── logging.md                    # 日志规范
+│   │   ├── minimal-prototype.md          # 最小开发闭环
+│   │   ├── ai-collaboration.md           # AI 协作规范
+│   │   ├── git-workflow.md               # Git 工作流规范
+│   │   └── cicd-actions.md               # CI 基础设施规范
+│   ├── versions/                         # 版本记录（v1.0.0 / v1.1.0 / v1.3.0）
+│   └── archive/                          # 历史快照（不具当前效力）
 ├── evidence/
 │   └── evidence-index.md                 # 证据交叉索引表
 ├── reference/
@@ -219,11 +222,12 @@ waveyo-skill/
 
 WaveYo 作为 AI 助手与人类协作时，遵循 `collaboration.md` 中定义的协议：
 
-- **协作生命周期**：人类发起 → AI 执行 + 审查报告 → 人类审核 → squash merge
-- **角色边界**：架构决策 / 合并决策由人类独占，AI 负责执行、审查、文档
+- **协作生命周期**：人类发起 → AI 执行 + 审查报告 → 人类审核 → Merge PR（保留原始提交）
+- **任务范围**：设计讨论 / 仅出提示词 / 实际实现分开对待，按授权执行，不把所有任务变成等审批
+- **角色边界**：架构决策 / 合并决策由人类保留，AI 负责执行、审查、文档
 - **信任梯度**：T0（逐行审查）→ T1（审查报告+CI）→ T2（快速扫视），安全 PR 始终 T0
-- **跨会话延续**：每场会话结束时输出延续提示词（HEAD commit + 已完成清单 + 待讨论方向）
-- **PR 审查报告**：Security / Defect / Style 三级分类，每项含文件路径+行号
+- **跨会话延续**：每场会话结束时输出延续提示词（HEAD commit + 已完成清单 + 未验证项）
+- **PR 审查报告**：Security / Defect / Style 三级分类，每项含文件路径+行号，附验收证据
 
 ---
 
@@ -267,7 +271,8 @@ Layer 5: 雷区/边界              →    技术红线（禁止夸大 / 边界�
 
 ## 版本
 
-- **1.3.0** (2026-06-25)：新增 2 个仓库蒸馏（cn-area + freessh）+ 声明优化。新增 Rust/Tauri 桌面应用开发、多语言 Monorepo + 代码生成、解耦规则统一归档。扩展全函数中文注释规范（GoDoc/Rust///Python docstring/JSDoc 四语言统一）。新增文件行数限制（前端 600 / 后端 800）。覆盖仓库数 25 → 27。
+- **2.0.0** (2026-11-04)：大版本。新增 `frontend-ui-ux`（界面结构、控件判据、浮层导航、异步四态、视觉动效、可访问性、动态验收）与 `upstream-error-handling`（错误链、失败分类、结构化诊断、公开映射、幂等重试）两个专题；专题集重组为工程规范类；入口与各专题通用化（去除单项目框架/数据库/私有路径假设）；修正 `references/` 断链；合并策略统一为保留原始提交与合并节点的 Merge PR；移除 `meta.json`，版本号移入 `SKILL.md` frontmatter；归档目录加注「不具当前效力」。
+- **1.3.0** (2026-06-25)：新增 2 个仓库蒸馏 + 声明优化。新增 Rust/Tauri 桌面应用开发、多语言 Monorepo + 代码生成、解耦规则统一归档。扩展全函数中文注释规范。新增文件行数限制（前端 600 / 后端 800）。
 - **1.2.0** (2026-05-22)：新增 5 级日志体系（TRACE < DEBUG < INFO < WARN < ERROR）+ 统一错误处理规范（AppError/AppException 分类、错误码体系、错误中间件、错误-日志级别映射、缓存 miss/error 区分）。
 - **1.1.0** (2026-05-17)：新增人机协作规范体系 — `collaboration.md` + `git-collaboration` 子 Skill。persona.md Layer 4 扩展人机协作小节，work.md 扩展 Git 协作流程和 PR 审查报告生成。
 - **1.0.0** (2026-05-15)：初始蒸馏，覆盖 25 个仓库 + 20 个画像文件
