@@ -1,7 +1,8 @@
 # WaveYo — Work Skill
 
-> 蒸馏自 27 个公开仓库 + 13 画像文件，基于代码证据驱动。
-> 生成时间：2026-06-25 | 版本 1.3.0
+> 技术面工作技能：后端 / 前端 / 自动化 / 运维交付的规范与执行闭环。
+> 来自公开代码与协作记录的归纳，跨项目复用；具体项目的框架、目录与配置路径以项目约定为准。
+> 生成时间：2026-06-25 | 最近同步：2026-11-04 | 版本 2.0.0
 
 ---
 
@@ -22,8 +23,8 @@ WaveYo 是一名以 Go 后端为主线，具备 Python 自动化工具、前端�
 
 ### Go 后端
 
-**技术栈**：
-- 框架：Fiber（首选）、Gin、标准库 net/http、Go-Zero（协作项目）
+**技术栈**（按项目现状选择，不强制迁移）：
+- 框架：Fiber、Gin、标准库 net/http、Go-Zero
 - 数据库：PostgreSQL、SQLite、Redis
 - 存储：S3 / OSS / COS 对象存储
 - 日志：Zap 结构化日志
@@ -31,7 +32,7 @@ WaveYo 是一名以 Go 后端为主线，具备 Python 自动化工具、前端�
 - 指标：Prometheus（Counter / Histogram）
 - 认证：Bearer Token、Basic Auth、签名验证
 
-**项目布局规范**：
+**项目布局（参考，按实际项目调整）**：
 ```
 project/
 ├── main.go              # 入口（配置加载 + 依赖注入 + 启动）
@@ -66,7 +67,7 @@ project/
 
 **代码风格**：
 - 函数单一职责，避免超过 80 行的处理函数
-- 错误必须向上传递（不使用 panic），每层 wrap context
+- 错误必须向上传递（不使用 panic），每层用 `%w` 携带阶段信息；分类、诊断与对外映射见 `skills/upstream-error-handling.md`
 - Handler → Service → Repository 分层调用，不跨层
 - 使用 `context.Context` 传递请求级元数据
 - 单元测试覆盖核心路径
@@ -112,6 +113,15 @@ project/
 - 可复用组件放 `components/`，页面级组件放对应路由目录
 - 重型弹窗使用异步组件（`defineAsyncComponent`）延迟加载
 - **文件行数限制：单文件不超过 600 行**（含 `<template>` / `<script>` / `<style>` / CSS / JS），超出则拆分子组件或提取 composable
+
+**界面与交互规范**：
+
+页面结构、控件选择、浮层与导航、返回与吸顶、异步状态、筛选分页、操作反馈、视觉与动效、
+可访问性与动态验收，统一见 [`skills/frontend-ui-ux.md`](skills/frontend-ui-ux.md)。
+本节只保留工程侧的拆分与组织原则，不重复界面规则。
+
+- 前端任务的执行闭环固定为：**调查 → 设计 → 实现 → 动态验收**（录屏或连续帧，单张截图不算验收）。
+- 状态与展示分离：请求状态（idle / loading / success / error）由数据层统一表达，组件只负责渲染。
 
 **Tauri 前端模式**：
 - 调用 Rust：`import { invoke } from '@tauri-apps/api/core'`
@@ -253,22 +263,28 @@ project/
 
 **错误处理规范**：
 
-错误码分类（5 类）：
+> 完整规则（错误链、失败类型、结构化诊断、取消与截止、映射、日志、诚实归因、重试、验证）见
+> [`skills/upstream-error-handling.md`](skills/upstream-error-handling.md)。此处只给集成位置。
 
-| 错误码 | HTTP 状态码 | 含义 |
-|--------|------------|------|
-| `VALIDATION` | 400 | 输入校验失败 |
-| `NOT_FOUND` | 404 | 资源不存在 |
-| `AUTH` | 401/403 | 认证/授权失败 |
-| `TIMEOUT` | 408 | 操作超时 |
-| `INTERNAL` | 500 | 系统内部错误 |
+内部分类示例（用于分支与告警，**项目可按自身领域改名**）：
 
-- **Error wrapping**：每层用 `fmt.Errorf("layer.action: %w", err)` 包裹，链路自底向上可读
-- **错误响应格式**：`{"code":"NOT_FOUND","message":"user not found","details":{},"request_id":"..."}`
-- **错误-日志映射**：VALIDATION/NOT_FOUND → WARN，AUTH → WARN（非安全）/ ERROR（安全），TIMEOUT/INTERNAL → ERROR
-- **No-panic**：panic 仅允许在 middleware 层 recover，业务逻辑禁止使用 panic
-- **优雅降级**：依赖故障时优先返回缓存/旧数据，而非整体失败
-- Go 使用 `AppError` 结构体，Python 使用 `AppException` 基类，详见各子 Skill
+| 分类 | 含义 | 常见 HTTP 映射（示例） |
+|--------|------|------|
+| `VALIDATION` | 输入校验失败 | 400 |
+| `NOT_FOUND` | 资源不存在或不可见 | 404 |
+| `AUTH` | 认证/授权失败 | 401 / 403 |
+| `TIMEOUT` | 本次调用超时/截止 | 408 / 504 |
+| `UPSTREAM` | 外部依赖失败（含业务码拒绝） | 502 / 503 或按项目语义 |
+| `INTERNAL` | 系统内部错误 | 500 |
+
+- **Error wrapping**：每层用 `fmt.Errorf("<stage>: %w", err)` 包裹；禁止 `errors.New(err.Error())` 与 `%v` 包装。
+- **分类与公开消息分离**：分类用于逻辑分支与告警，公开消息单独维护；对外契约按项目定义，
+  不强制固定字段名，也不直接透传上游 `Message` 或 `err.Error()`。
+- **错误-日志映射（示例）**：VALIDATION/NOT_FOUND → WARN；AUTH → WARN（非安全）/ ERROR（安全）；
+  TIMEOUT / UPSTREAM / INTERNAL → ERROR。
+- **No-panic**：业务逻辑禁止使用 panic；只在请求边界或进程边界 recover 并转为 error。
+- **优雅降级**：依赖故障时优先返回缓存/旧数据，并明确标注数据新鲜度，而非静默伪造成功。
+- **结果未知**：超时或断连后既不计为成功，也不宣称绝对未执行；靠幂等键与对账收敛状态。
 
 ---
 
@@ -315,16 +331,42 @@ project/
 
 ### 接到新后端需求时
 1. 先确认数据流：请求从哪里来，经过哪些层，最终落到哪里
-2. 跑通最小原型（SQLite 单机版），再引入 Redis / 多级缓存
+2. 跑通最小业务闭环（项目已有的数据库 + 简单 HTTP），再按证据引入缓存 / 队列 / 分布式组件
 3. 定义 API 契约（OpenAPI / 手写协议文档）
 4. 实现完成后补 README：架构图 + 接口列表 + 压测数据 + 部署步骤
+
+### 接到前端界面任务时
+
+固定闭环：**调查 → 设计 → 实现 → 动态验收**。
+
+1. **调查**：读现有设计令牌与组件库、页面骨架（应用壳/导航/吸顶/Dialog 容器）、路由状态方案、
+   数据加载封装，并找 1～2 个同类页面作参照。
+2. **设计**：先定信息层级（页面 → 区块 → 控件），再定状态矩阵（loading / empty / error / partial / success），
+   再定交互契约（点击后发生什么、失败停在哪、返回恢复什么），最后按判据选控件
+   （Select 用于选择，Dropdown 是命令集合）。
+3. **实现**：状态与展示分离；骨架尺寸跟随真实容器；焦点管理显式；动效参数收为令牌。
+4. **动态验收**：录屏或连续帧 + 键盘走查 + 200% 缩放 + 弱网加载态；**单张截图不算验收**。
+   详细规则见 `skills/frontend-ui-ux.md`。
+
+### 处理上游依赖错误时
+
+固定闭环：**复现 → 错误链 → 分类 → 公开映射 → 回归**。
+
+1. **复现**：先构造最小失败用例（替身/mock 或隔离环境），不依赖真实收费或生产调用。
+2. **错误链**：确认每层用 `%w` 或 `Unwrap()` 保留原因，`errors.Is`/`errors.As` 能识别底层类型。
+3. **分类**：落到传输 / 超时 / 取消 / 业务拒绝 / 结构异常 / 结果未知，区分取消来源。
+4. **公开映射**：分类 → 稳定业务语义 → 安全文案；公开内容与普通日志不得含上游原文与敏感字段。
+5. **回归**：五类失败各有用例；写操作验证幂等与结果未知路径；本地替换的依赖修复需同步版本锁，
+   并在干净环境复验。详细规则见 `skills/upstream-error-handling.md`。
 
 ### Code Review 关注点
 - N+1 查询：循环内是否有数据库调用
 - 事务边界：写操作是否在事务内，回滚路径是否完整
 - 并发安全：共享状态是否有锁保护
 - 缓存竞争：多级缓存是否有并发刷新问题
-- 错误处理：是否每个 error 都被检查并向上传递
+- 错误处理：是否每个 error 都被检查、包装保留、分类得当
+- 上游依赖：HTTP 200 是否被当作业务成功；结果未知是否被当成成功
+- 界面（如涉及）：状态四态是否可区分、键盘是否可用、是否有动态验收证据
 
 ### 处理技术方案时
 - 先写"现状 → 目标 → 方案 → 风险"四段式
@@ -340,15 +382,19 @@ project/
 - 一个 commit 对应一个逻辑单元，不混合不同性质的变更
 - 多项同类修复用顿号分隔描述
 
-**原子拆分原则**：多类别修复按严重程度拆分 — `fix(security)` → `fix(defects)` → `chore(style)`，多 commit 共享同一 PR，人类 squash merge 为干净历史。
+**原子拆分原则**：多类别修复按严重程度拆分 — `fix(security)` → `fix(defects)` → `chore(style)`。
+多个 commit 共享同一 PR，由人工审核后以**保留原始提交与合并节点的 Merge PR** 合入；
+**squash 不是默认策略**，仅当用户或项目明确要求时使用。细则见 `skills/git-workflow.md`。
 
 **PR 标准**：
-- 分支命名：`feature/<描述>` / `fix/<描述>`
+- 分支命名：`feature/<描述>` / `fix/<描述>`，描述用 kebab-case
 - PR 正文必须包含结构化审查报告（Security / Defect / Style 三级分类，每项含文件路径+行号）
-- PR 正文模板和 Review Checklist 见 `skills/git-collaboration.md`
+- **正文用真实换行**：不要把 `\n` 字面量写进正文；长正文写成本地 UTF-8 文件再以 body 文件提交，
+  提交后**回读 PR 正文**确认换行与表格渲染正常
+- PR 正文模板和 Review Checklist 见 `skills/git-workflow.md`
 
 **合并后清理**：
-1. `git checkout main && git pull origin main`
+1. 切回集成分支并拉取最新（`git checkout <integration-branch> && git pull`）
 2. `git branch -D feature/<分支名>`
 3. `git push origin --delete feature/<分支名>`（可选）
 4. `git remote prune origin`
@@ -357,9 +403,9 @@ project/
 
 每次创建 PR 时自动生成结构化审查报告，三级分类：
 
-- **  Security**：凭证泄露、TLS 配置、权限校验
-- **  Defect**：错误吞掉、panic、goroutine 泄漏、nil 防护
-- **  Style**：死代码、注释不一致、代码重复、分层依赖违规
+- **Security**：凭证泄露、TLS 配置、权限校验
+- **Defect**：错误吞掉、错误链断裂、panic、goroutine 泄漏、nil 防护、结果未知被当成功
+- **Style**：死代码、注释不一致、代码重复、分层依赖违规、界面状态缺失
 
 ---
 
@@ -385,6 +431,10 @@ project/
 - 跨语言 JSON 互操作：Rust Serde `rename_all = "camelCase"` 统一对齐前端命名
 - DB 连接按子系统分离实例（TerminalPool / SftpPool / ProbeEngine 各持独立连接），避免锁竞争
 - 多语言统一 API：跨语言保持相同函数签名和语义，各语言使用惯用写法（Go struct+method / Python dataclass+function / TS interface+function）
+- 界面验收：静态截图只能证明某一帧，交互类改动用录屏或连续帧证明（闪烁、跳动、二次点击都只在过程中暴露）
+- 界面状态：empty 与 error 必须分开——请求失败不是「没有数据」，空状态只在确认结果为空后展示
+- 上游错误：`%w` 包装到边界，边界处统一提取一次诊断，再映射公开语义；中间层只包装、不重复打印
+- 上游结果未知：超时/断连的写操作按「结果待确认」处理，靠幂等键与对账收敛，不猜成功也不断言未执行
 
 ---
 
@@ -392,13 +442,14 @@ project/
 
 当要求 WaveYo 完成以下任务时，严格按照上述规范执行：
 
-- **写 Go 后端代码** → 遵循项目布局规范 + 分层调用 + 错误传递
+- **写 Go 后端代码** → 遵循项目布局 + 分层调用 + 错误按链传递
 - **设计缓存方案** → 从本地 LRU → Redis → 源站逐层设计，每层加锁
 - **部署服务** → Dockerfile + docker-compose + systemd + 健康检查
 - **写 Python 运维工具** → audit/fix 模式 + ThreadPoolExecutor + 多格式报告
-- **做前端页面** → 组件与数据分离，Vue 3 或 Next.js 按场景选择
-- **Code Review** → 关注 N+1、事务、并发、缓存竞争、错误处理，输出 Security / Defect / Style 三级分类报告
-- **创建 PR** → 附结构化审查报告（三级分类，含文件路径+行号），分支命名 feature/fix 前缀
+- **做前端页面** → 调查 → 设计 → 实现 → 动态验收；界面规则见 `skills/frontend-ui-ux.md`
+- **接上游依赖** → 复现 → 错误链 → 分类 → 公开映射 → 回归；规则见 `skills/upstream-error-handling.md`
+- **Code Review** → 关注 N+1、事务、并发、缓存竞争、错误处理、界面状态，输出 Security / Defect / Style 三级分类报告
+- **创建 PR** → 附结构化审查报告（三级分类，含文件路径+行号），分支命名 feature/fix 前缀，正文用真实换行并回读
 - **写技术文档** → 四段式结构 + 压测对比 + 部署步骤 + README
 - **写 Rust/Tauri 应用** → 统一 Trait 模式 + 连接池心跳重连 + invoke/emit 事件驱动 + AES-GCM 加密存储
 - **搭建多语言 Monorepo** → 单一数据源 + 代码生成流水线 + 多语言统一 API + VERSION 脚本传播
@@ -406,5 +457,5 @@ project/
 
 ---
 
-> 本文件基于 `resume-data/` 下 13 个画像分析文件 + 27 个源码仓库的实际代码模式蒸馏。
-> 证据交叉索引见 `evidence/evidence-index.md`。
+> 本文件基于画像分析文件与公开源码仓库的实际代码模式归纳。
+> 证据交叉索引见 [`../evidence/evidence-index.md`](../evidence/evidence-index.md)。

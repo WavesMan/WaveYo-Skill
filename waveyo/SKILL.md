@@ -1,88 +1,154 @@
 ---
 name: waveyo
-description: "WaveYo 工程技能蒸馏 — 以 Go 后端为主线，具备 Python 自动化、前端工程、Rust 系统工具和运维交付能力的工具型工程开发者 Skill。含 7 个领域专项子 Skill：Go 服务脚手架、多级缓存、对象存储、网关/BFF、Python SSH 巡检、项目交付、Git 协作规范。含人机协作协议。"
-version: "1.3.0"
+description: >
+  WaveYo 工程技能：跨项目复用的工程纪律与交付习惯，不绑定任何单一业务项目。
+  当需要编写或评审后端服务、前端页面与交互、命名与注释、日志与可观测性、
+  上游依赖（SDK / HTTP / RPC / 数据库驱动 / 对象存储）的错误处理、
+  或处理分支提交 PR 与 AI 协作交付时使用此技能。
+  也应在以下隐含场景主动触发：新增文件/函数/类型、决定包名与表名、选择日志级别、
+  判断是否该引入缓存或分布式组件、做界面层级与交互反馈设计、
+  处理「上游报错但不知原因」「结果未知」「HTTP 200 但业务失败」、
+  编写结构化审查报告、跨会话接续开发。
+  即使用户没提「规范」，只要任务涉及以上工程判断，都应加载并按需读取对应专题。
+version: "2.0.0"
 user-invocable: true
 ---
 
-# WaveYo — Engineering Skill
+# WaveYo — 工程技能
 
-> 蒸馏自 WavesMan（github.com/WavesMan）27 个公开仓库 + 13 个画像分析文件。
-> 基于代码证据驱动，参考 colleague-skill 的 5 层 Persona 框架 + Work Skill 双轨架构。
-> 蒸馏时间：2026-06-25 | 版本 1.3.0
-
----
-
-## 加载方式
-
-加载本 Skill 后，AI 将获得 WaveYo 的完整工程能力：
-
-- **工程原则**（persona.md Layer 0）：缓存必加锁、服务必带 health、README 先于代码、配置驱动、压测验证、最小原型先行、上游边界声明、错误分类+日志分级、配置即数据+代码生成、API 同构、密码学安全、有状态连接生命周期管理
-- **技术能力**（work.md）：Go 后端 / Python 自动化 / 前端工程 / Rust 系统工具 / 多语言 Monorepo / 运维交付 六大方向
-- **解耦规则**（work.md 统一归档）：文件行数限制（前端 600 / 后端 800）、函数单一职责（≤80 行）、分层架构、接口隔离、组件拆分、单向数据流
-- **注释规范**（persona.md Layer 2）：全函数中文注释覆盖，GoDoc / Rust `///` / Python Google-style docstring / JSDoc 四语言统一规范
-- **5 级日志体系**（work.md）：TRACE < DEBUG < INFO < WARN < ERROR，含 Go/Python 双语言实现
-- **统一错误处理规范**（work.md）：AppError/AppException 分类、错误码体系、错误中间件、错误-日志级别映射
-- **决策模式**（persona.md Layer 3）：正确性 > 可观测性 > 性能 > 部署 > 扩展
-- **协作行为**（persona.md Layer 4）：来源标注、边界清晰、文档交接
-- **技术红线**（persona.md Layer 5）：不夸大、不越界、不把 planned 当 done
+> **定位**：一套可跨项目使用的工程纪律。管**判断方式与交付底线**（命名、注释、日志、
+> 最小闭环、界面品质、上游错误、协作与 Git），不管某个业务领域的表结构与接口细节。
+>
+> **它不是什么**：不是某个项目的专属规范，不预设特定框架、特定数据库、特定目录结构；
+> 具体项目的约定（框架、目录、配置路径、公开错误契约）永远优先于本 skill 的默认建议。
 
 ---
 
-## 子 Skill 导航
+## 1. 优先级
 
-以下专项 Skill 可独立加载：
+```
+人类明确指令  >  所在仓库的显式规范（AGENTS.md / CONTRIBUTING / 设计系统）  >  本 skill  >  通用最佳实践
+```
 
-| Skill | 触发场景 | 文件 |
+- 用户说「这次按 X 做」→ 按 X，不必援引本 skill。
+- 本 skill 与仓库规范冲突 → **仓库规范优先**，除非用户明确要求覆盖。
+- 本 skill 未覆盖 → 用通用最佳实践，并在 PR 或交付说明中写明判断依据。
+- 两条**不可被项目豁免**的底线：敏感信息不落日志、不把未验证的内容说成已完成。
+
+---
+
+## 2. 触发说明
+
+| 场景 | 必读专题 |
+|---|---|
+| 前端页面 / 导航 / 表单 / 列表 / Dialog / 主题 / 动效 / 响应式 / 视觉验收 | `skills/frontend-ui-ux.md` |
+| 接入 SDK、HTTP/RPC、数据库驱动、对象存储、消息队列；排查超时/取消/结果未知 | `skills/upstream-error-handling.md` |
+| 新增标识符（包/类型/函数/表/路由/参数） | `skills/naming.md` |
+| 写文件头、函数注释、接口契约 | `skills/comment-style.md` |
+| 加日志、调级别、配置输出 | `skills/logging.md` |
+| 接新需求、考虑引入缓存/队列/分布式组件 | `skills/minimal-prototype.md` |
+| 与 AI 协作编码、审查、交付 | `skills/ai-collaboration.md` |
+| 建分支、写 commit、开 PR、Code Review | `skills/git-workflow.md` |
+| 写 CI 配置、调 CI runner、排 CI 网络/TLS 失败 | `skills/cicd-actions.md` |
+
+**按需读取**：主题详细规则只在对应专题维护，本入口只做索引与底线，不复制正文——
+避免同一规则两处维护、日后互相矛盾。
+
+---
+
+## 3. 十条工程底线
+
+| # | 底线 | 展开位置 |
 |---|---|---|
-| Go Service Scaffold | 新建 Go 后端项目 | `skills/go-service-scaffold.md` |
-| Multi-Level Cache | 引入缓存优化 | `skills/multi-level-cache.md` |
-| Object Storage Integration | 接入 S3/OSS/COS | `skills/object-storage-integration.md` |
-| Gateway / BFF Pattern | 设计网关或 BFF 层 | `skills/gateway-bff-pattern.md` |
-| Python SSH Audit | Linux 批量巡检/修复 | `skills/python-ssh-audit.md` |
-| Project Delivery | 服务打包部署 | `skills/project-delivery.md` |
-| Git Collaboration | 分支/提交/PR/Code Review | `skills/git-collaboration.md` |
+| B1 | 命名实体优先：类型/表/包用纯名词，函数用动词 + 名词，不用 `Manager`/`Helper`/`Util` 泛词 | `skills/naming.md` |
+| B2 | 注释解释「为什么」，公开函数写清契约（前提/副作用/错误） | `skills/comment-style.md` |
+| B3 | 日志分级统一（TRACE/DEBUG/INFO/WARN/ERROR），敏感字段任何级别都不输出 | `skills/logging.md` |
+| B4 | 最小闭环先行：先用项目已有的基础设施跑通真实链路，再按证据增加组件 | `skills/minimal-prototype.md` |
+| B5 | 界面状态诚实：加载/空/错/成功可区分，刷新不清空，返回能复原 | `skills/frontend-ui-ux.md` |
+| B6 | 上游错误保留原始错误链，提取结构化诊断，对外只暴露项目定义的公开语义 | `skills/upstream-error-handling.md` |
+| B7 | 变更走分支 + PR；合并与发布由人类决策（无明确授权时 AI 不自行合并） | `skills/ai-collaboration.md` |
+| B8 | 提交保持原子：安全 > 缺陷 > 重构 > 风格 > 文档 > 清理，按类别拆分 | `skills/git-workflow.md` |
+| B9 | 合并保留原始提交与合并节点（Merge PR）；squash 不是默认策略，除非用户或项目明确要求 | `skills/git-workflow.md` |
+| B10 | 不把未验证、未执行、计划中的内容写成已完成 | `persona.md` Layer 5 |
 
 ---
 
-## 目录结构
+## 4. 交付前自检（通用最小集）
+
+- [ ] 命名符合实体优先，未引入语义空洞的泛词
+- [ ] 新文件有文件头说明；变更过的公开接口写清契约
+- [ ] 日志级别正确，未输出密码/令牌/密钥/验证码/完整联系方式
+- [ ] 错误保留了原始链（`%w` 或等价机制），对外文案不含上游原文
+- [ ] 界面（如涉及）四态可区分，键盘可用，提供动态验收证据
+- [ ] 变更已按性质拆分提交，commit 描述具体到做了什么
+- [ ] 构建/静态检查/相关测试已实际执行，命令与结果可复述
+- [ ] 未验证的部分已明确列为「待验证」，未伪装成已完成
+
+---
+
+## 5. 专题索引
+
+| 专题 | 何时必读 |
+|---|---|
+| [`skills/frontend-ui-ux.md`](skills/frontend-ui-ux.md) | 任何页面结构、视觉、交互、状态反馈、可访问性改动 |
+| [`skills/upstream-error-handling.md`](skills/upstream-error-handling.md) | 任何外部依赖的错误映射、诊断、日志、重试设计 |
+| [`skills/naming.md`](skills/naming.md) | 新增任何标识符之前 |
+| [`skills/comment-style.md`](skills/comment-style.md) | 编写或修改文件头、函数、接口注释 |
+| [`skills/logging.md`](skills/logging.md) | 添加日志语句、调整日志级别 |
+| [`skills/minimal-prototype.md`](skills/minimal-prototype.md) | 接到新需求、考虑引入新组件时 |
+| [`skills/ai-collaboration.md`](skills/ai-collaboration.md) | AI 参与编码/审查/交付时 |
+| [`skills/git-workflow.md`](skills/git-workflow.md) | 创建分支、写 commit、建 PR、Code Review |
+| [`skills/cicd-actions.md`](skills/cicd-actions.md) | 写 CI 配置、调 runner、排 CI 网络与 TLS 问题 |
+
+配套文档：
+
+| 文件 | 内容 |
+|---|---|
+| [`persona.md`](persona.md) | 工程原则、技术定位、表达习惯、决策模式、技术红线（5 层框架） |
+| [`work.md`](work.md) | 技术面：后端 / 前端 / 自动化 / 运维交付的规范与工作流程 |
+| [`collaboration.md`](collaboration.md) | 人机协作协议：任务范围、角色边界、审查报告、跨会话延续 |
+| [`versions/`](versions/) | 版本演进记录（当前版本见本文件 frontmatter） |
+| [`archive/`](archive/) | 历史快照，**只作溯源，不具当前执行效力** |
+
+---
+
+## 6. 目录结构
 
 ```
 waveyo/
-├── SKILL.md              # 本文件（主入口）
-├── work.md               # 技术工作技能
-├── persona.md            # 工程人格（5 层框架）
-├── collaboration.md      # 人机协作规范
-├── meta.json             # 元数据
-├── skills/               # 7 个领域专项 Skill
-│   ├── go-service-scaffold.md
-│   ├── multi-level-cache.md
-│   ├── object-storage-integration.md
-│   ├── gateway-bff-pattern.md
-│   ├── python-ssh-audit.md
-│   ├── project-delivery.md
-│   └── git-collaboration.md
-└── versions/             # 版本归档
+├── SKILL.md                          # 本文件：定位、优先级、底线、索引
+├── persona.md                        # 工程人格（5 层框架）
+├── work.md                           # 技术工作技能与工作流程
+├── collaboration.md                  # 人机协作规范
+├── skills/                           # 专题（详细规则在此维护）
+│   ├── frontend-ui-ux.md             # 前端 UI/UX 设计要求
+│   ├── upstream-error-handling.md    # 上游错误正确处理
+│   ├── naming.md
+│   ├── comment-style.md
+│   ├── logging.md
+│   ├── minimal-prototype.md
+│   ├── ai-collaboration.md
+│   ├── git-workflow.md
+│   └── cicd-actions.md
+├── versions/                         # 版本记录
+└── archive/                          # 历史快照（无当前效力）
 ```
 
 ---
 
-## 证据基础
+## 7. 维护约定
 
-- 画像文件：`resume/resume-data/` 下 6 顶层 + 7 后端 + 7 前端 = 20 个分析文件
-- 源码仓库：`github-backend-analysis/` 下 10 个仓库 + `github-frontend-analysis/` 下 16 个仓库 = 26 个完整源码 checkout + 1 个本地仓库（freessh）
-- 硬约束：`02-简历表达边界.md`、`06-职责边界与风险说明.md`、`06-fork与二次开发边界说明.md`
-- 证据索引：`evidence/evidence-index.md`
+1. **一条规则只写一处**：详细规则进 `skills/*.md`，其他文档只引用，不复述。
+2. **新增专题**需同时更新：本文件 §2 触发表、§5 索引、§6 目录、`work.md` 对应工作入口。
+3. **改默认策略**（如合并方式）必须同步：`skills/git-workflow.md`、`collaboration.md`、
+   `work.md` 与相关流程图，避免文字与图示打架。
+4. **不写入具体项目私有信息**：私有地址、内部路径、凭据、单项目表结构、未脱敏日志样例。
+   示例使用中性名称与占位符。
+5. **历史不改写**：`archive/` 保留原日期与原始结论，只在必要时做匿名化与链接修复，
+   并标注「归档，不具当前效力」。
 
 ---
 
-## 方法论溯源
-
-本 Skill 的蒸馏方法论参考了 [colleague-skill](https://github.com/titanwings/colleague-skill) 项目，但做了以下适配：
-
-- **数据源切换**：聊天记录 → 代码仓库 + 画像分析文件
-- **Persona 适配**：人际人格 → 工程人格（5 层框架保留，内容完全重写）
-- **标签库重写**：职场性格标签 → 工程模式标签
-- **增量设计**：保留 merger.md 的增量更新逻辑，后续新增仓库可追加蒸馏
-
-参见 `reference/colleague-skill-5layer-structure.md` 获取框架参考。
+> 方法论溯源：本 skill 采用 colleague-skill 的 5 层 Persona 结构 + Work Skill 双轨架构，
+> 内容来自公开代码与协作记录的归纳，不引用私有数据。框架参考见
+> [`../reference/colleague-skill-5layer-structure.md`](../reference/colleague-skill-5layer-structure.md)。
