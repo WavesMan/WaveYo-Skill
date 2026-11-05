@@ -86,9 +86,9 @@ func RegisterTenant(g gin.IRouter, api TenantAPI, handler ...gin.HandlerFunc) {
 | 代码形态 | 文档位置 |
 |---|---|
 | `_ *struct{}` 或无入参 | 无 query / body |
-| `*struct{ Name string \`form:"name"\` }` | query 参数 |
-| `*struct{ Name string \`json:"name"\` }` | requestBody（JSON） |
-| `struct{ ID string \`uri:"id"\` }` | path 参数 |
+| `*struct{ Name string \ form:"name"\ }` | query 参数 |
+| `*struct{ Name string \ json:"name"\ }` | requestBody（JSON） |
+| `struct{ ID string \ uri:"id"\  }` | path 参数 |
 
 其他框架同理：按绑定标签/装饰器判断 query、body、path，不要凭字段名猜。
 
