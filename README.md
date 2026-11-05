@@ -2,7 +2,7 @@
 
 > *将一位开发者 27 个公开仓库中反复出现的工程模式、技术习惯和架构判断，蒸馏为一套可被 AI 加载的复用技能。*
 
-[![Skill Type](https://img.shields.io/badge/Skill-Engineering-blue)](./waveyo/SKILL.md) [![Version](https://img.shields.io/badge/version-2.0.0-green)](./waveyo/SKILL.md) [![DeepSeek](https://img.shields.io/badge/DeepSeek_TUI-AgentSkills-purple)](https://github.com/deepseek) [![Claude](https://img.shields.io/badge/Claude_Code-AgentSkills-0e6eb8)](https://www.anthropic.com/) [![Cursor](https://img.shields.io/badge/Cursor-AgentSkills-00b4ff)](https://www.cursor.so/) [![Codex](https://img.shields.io/badge/Codex-AgentSkills-8a2be2)](https://openai.com/blog/codex)
+[![Skill Type](https://img.shields.io/badge/Skill-Engineering-blue)](./waveyo/SKILL.md) [![Version](https://img.shields.io/badge/version-2.1.0-green)](./waveyo/SKILL.md) [![DeepSeek](https://img.shields.io/badge/DeepSeek_TUI-AgentSkills-purple)](https://github.com/deepseek) [![Claude](https://img.shields.io/badge/Claude_Code-AgentSkills-0e6eb8)](https://www.anthropic.com/) [![Cursor](https://img.shields.io/badge/Cursor-AgentSkills-00b4ff)](https://www.cursor.so/) [![Codex](https://img.shields.io/badge/Codex-AgentSkills-8a2be2)](https://openai.com/blog/codex)
 
 ---
 
@@ -13,7 +13,7 @@
 加载后，AI 会获得：
 - **通用工程底线**：命名、注释、日志、最小闭环、界面状态、上游错误、协作与 Git
 - **6 个技术领域的完整能力**：Go 后端 / Python 自动化 / 前端工程 / Rust 系统工具 / 多语言 Monorepo / 运维交付
-- **9 个独立可复用的专题**：从界面规范、上游错误处理，到命名、日志、CI 与 Git 协作
+- **10 个独立可复用的专题**：从界面规范、上游错误处理、接口文档，到命名、日志、CI 与 Git 协作
 - **5 层技术决策框架**：正确性 > 可观测性 > 性能 > 部署 > 扩展
 - **人机协作规范**：任务范围区分、角色边界、信任梯度、跨会话状态传递、PR 审查报告自动生成
 
@@ -143,7 +143,7 @@ grep "^version:" ~/.claude/skills/waveyo/SKILL.md
 
 # 检查专题完整性
 ls ~/.claude/skills/waveyo/skills/
-# 预期输出：9 个 .md 文件
+# 预期输出：10 个 .md 文件
 ```
 
 #### 平台路径速查
@@ -185,6 +185,7 @@ ls ~/.claude/skills/waveyo/skills/
 | `ai-collaboration` | AI 参与编码/审查/交付 | 审查报告模板、原子提交、跨会话延续、诊断顺序、行为红线 |
 | `git-workflow` | 分支 / 提交 / PR / Review | Commit 规范、原子拆分、PR 模板与 Checklist、合并策略、清理流程 |
 | `cicd-actions` | CI 配置与排障 | Runner 部署、三层代理、TLS 根因、workflow 模板、排障速查 |
+| `openapi-doc` | 接口变更 / 文档生成与维护 | 路由与参数提取、类型映射、字段变更记录、弃用留痕、跨文件 `$ref` 禁令、平台同步授权与校验 |
 
 ---
 
@@ -206,7 +207,8 @@ waveyo-skill/
 │   │   ├── minimal-prototype.md          # 最小开发闭环
 │   │   ├── ai-collaboration.md           # AI 协作规范
 │   │   ├── git-workflow.md               # Git 工作流规范
-│   │   └── cicd-actions.md               # CI 基础设施规范
+│   │   ├── cicd-actions.md               # CI 基础设施规范
+│   │   └── openapi-doc.md                # OpenAPI 接口文档规范（v2.1.0 新增）
 │   ├── versions/                         # 版本记录（v1.0.0 / v1.1.0 / v1.3.0）
 │   └── archive/                          # 历史快照（不具当前效力）
 ├── evidence/
@@ -271,6 +273,7 @@ Layer 5: 雷区/边界              →    技术红线（禁止夸大 / 边界�
 
 ## 版本
 
+- **2.1.0** (2026-11-05)：新增 `openapi-doc` 专题（OpenAPI 3.1 文档生成与增量维护、字段变更记录、路由变更与弃用留痕、跨文件 `$ref` 禁令、平台同步授权与校验）；入口触发表、索引、目录与 work/persona/collaboration 同步。
 - **2.0.0** (2026-11-04)：大版本。新增 `frontend-ui-ux`（界面结构、控件判据、浮层导航、异步四态、视觉动效、可访问性、动态验收）与 `upstream-error-handling`（错误链、失败分类、结构化诊断、公开映射、幂等重试）两个专题；专题集重组为工程规范类；入口与各专题通用化（去除单项目框架/数据库/私有路径假设）；修正 `references/` 断链；合并策略统一为保留原始提交与合并节点的 Merge PR；移除 `meta.json`，版本号移入 `SKILL.md` frontmatter；归档目录加注「不具当前效力」。
 - **1.3.0** (2026-06-25)：新增 2 个仓库蒸馏 + 声明优化。新增 Rust/Tauri 桌面应用开发、多语言 Monorepo + 代码生成、解耦规则统一归档。扩展全函数中文注释规范。新增文件行数限制（前端 600 / 后端 800）。
 - **1.2.0** (2026-05-22)：新增 5 级日志体系（TRACE < DEBUG < INFO < WARN < ERROR）+ 统一错误处理规范（AppError/AppException 分类、错误码体系、错误中间件、错误-日志级别映射、缓存 miss/error 区分）。

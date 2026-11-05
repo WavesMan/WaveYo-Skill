@@ -10,7 +10,7 @@ description: >
   处理「上游报错但不知原因」「结果未知」「HTTP 200 但业务失败」、
   编写结构化审查报告、跨会话接续开发。
   即使用户没提「规范」，只要任务涉及以上工程判断，都应加载并按需读取对应专题。
-version: "2.0.0"
+version: "2.1.0"
 user-invocable: true
 ---
 
@@ -50,6 +50,7 @@ user-invocable: true
 | 与 AI 协作编码、审查、交付 | `skills/ai-collaboration.md` |
 | 建分支、写 commit、开 PR、Code Review | `skills/git-workflow.md` |
 | 写 CI 配置、调 CI runner、排 CI 网络/TLS 失败 | `skills/cicd-actions.md` |
+| 改路由/字段名/类型，生成或维护 OpenAPI 文档，接口弃用 | `skills/openapi-doc.md` |
 
 **按需读取**：主题详细规则只在对应专题维护，本入口只做索引与底线，不复制正文——
 避免同一规则两处维护、日后互相矛盾。
@@ -99,6 +100,7 @@ user-invocable: true
 | [`skills/ai-collaboration.md`](skills/ai-collaboration.md) | AI 参与编码/审查/交付时 |
 | [`skills/git-workflow.md`](skills/git-workflow.md) | 创建分支、写 commit、建 PR、Code Review |
 | [`skills/cicd-actions.md`](skills/cicd-actions.md) | 写 CI 配置、调 runner、排 CI 网络与 TLS 问题 |
+| [`skills/openapi-doc.md`](skills/openapi-doc.md) | 改路由/结构体字段、生成或增量更新 OpenAPI 文档 |
 
 配套文档：
 
@@ -129,7 +131,8 @@ waveyo/
 │   ├── minimal-prototype.md
 │   ├── ai-collaboration.md
 │   ├── git-workflow.md
-│   └── cicd-actions.md
+│   ├── cicd-actions.md
+│   └── openapi-doc.md                # OpenAPI 接口文档规范
 ├── versions/                         # 版本记录
 └── archive/                          # 历史快照（无当前效力）
 ```
